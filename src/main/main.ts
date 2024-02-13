@@ -15,6 +15,7 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { cache } from 'webpack';
+import { release } from 'os';
 const { ethers } = require('hardhat');
 const Store = require('electron-store');
 
@@ -38,26 +39,16 @@ ipcMain.on('contractAddress', async (event, arg) => {
 });
 
 ipcMain.on('deploy', async (event, arg) => {
-  const [walletAddress] = arg;
+  const [walletAddress, releaseTime] = arg;
 
   const msgTemplate = (pingPong: string) => `${pingPong}`;
   console.log(msgTemplate(arg));
 
-  // Calculate unlock time based on the current timestamp and lock period
-  function calculateUnlockTime(lockPeriodInSeconds: number) {
-    const currentTimestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-    const unlockTime = currentTimestamp + lockPeriodInSeconds;
-    return unlockTime;
-  }
-
   const TimeLock = await ethers.getContractFactory('TimeLock');
-
-  const lockPeriodInSeconds = 60 * 3; // 3 min lock period
-  const unlockTime = calculateUnlockTime(lockPeriodInSeconds);
 
   // Start deployment, returning a promise that resolves to a contract object
   try {
-    const timelock = await TimeLock.deploy(walletAddress, unlockTime);
+    const timelock = await TimeLock.deploy(walletAddress, releaseTime);
     console.log('Contract deployed to address:', timelock.address);
 
     store.set('contract_address', timelock.address);

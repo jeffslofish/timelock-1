@@ -1,14 +1,19 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './App.css';
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, ReactNode } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs, { Dayjs } from 'dayjs';
 
 function Hello() {
   const [walletAddress, setWallettAddress] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
+  const [releaseTime, setReleaseTime] = useState<Dayjs | null>(null);
 
   let apiKey = '';
   let apiURL = '';
@@ -42,7 +47,15 @@ function Hello() {
         toast.error('Error: ' + msg);
       }
     });
-    window.electron.ipcRenderer.sendDeployMessage('deploy', [walletAddress]);
+
+    if (releaseTime) {
+      window.electron.ipcRenderer.sendDeployMessage('deploy', [
+        walletAddress,
+        releaseTime.unix(),
+      ]);
+    } else {
+      toast.error('Please choose a release time');
+    }
   };
 
   const withdraw = () => {
@@ -78,7 +91,15 @@ function Hello() {
         value={walletAddress}
         onChange={changeWalletAddress}
       />
+      <br />
 
+      <div className="date-time-picker">
+        <DateTimePicker
+          label="Controlled picker"
+          value={releaseTime}
+          onChange={(newValue) => setReleaseTime(newValue)}
+        />
+      </div>
       <br />
       <button id="deployButton" onClick={deploy}>
         Deploy Contract
@@ -95,15 +116,23 @@ function Hello() {
   );
 }
 
-export default function App() {
+interface Props {
+  children?: ReactNode;
+  // any props that come into the component
+}
+
+export default function App({ children }: Props) {
   return (
-    <div>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Hello />} />
-        </Routes>
-      </Router>
-      <ToastContainer />
-    </div>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      {children}
+      <div>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Hello />} />
+          </Routes>
+        </Router>
+        <ToastContainer />
+      </div>
+    </LocalizationProvider>
   );
 }
