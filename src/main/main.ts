@@ -56,11 +56,15 @@ ipcMain.on('deploy', async (event, arg) => {
   const unlockTime = calculateUnlockTime(lockPeriodInSeconds);
 
   // Start deployment, returning a promise that resolves to a contract object
-  const timelock = await TimeLock.deploy(walletAddress, unlockTime);
-  console.log('Contract deployed to address:', timelock.address);
+  try {
+    const timelock = await TimeLock.deploy(walletAddress, unlockTime);
+    console.log('Contract deployed to address:', timelock.address);
 
-  store.set('contract_address', timelock.address);
-  event.reply('deploy', msgTemplate(timelock.address));
+    store.set('contract_address', timelock.address);
+    event.reply('deploy', [true, msgTemplate(timelock.address)]);
+  } catch (error) {
+    event.reply('deploy', [false, error]);
+  }
 });
 
 ipcMain.on('withdraw', async (event, arg) => {
@@ -87,11 +91,10 @@ ipcMain.on('withdraw', async (event, arg) => {
 
   try {
     await timelockContract.withdraw();
+    event.reply('withdraw', [true, 'Withdraw complete']);
   } catch (msg) {
-    event.reply('withdraw', msg);
+    event.reply('withdraw', [false, msg]);
   }
-
-  event.reply('withdraw', 'Withdraw complete');
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -136,7 +139,7 @@ const createWindow = async () => {
     show: false,
     width: 1024,
     height: 728,
-    resizable: false,
+    //resizable: false,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged

@@ -2,6 +2,8 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './App.css';
 import { useState, ChangeEvent } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Hello() {
   const [walletAddress, setWallettAddress] = useState('');
@@ -28,19 +30,34 @@ function Hello() {
 
   const deploy = () => {
     // calling IPC exposed from preload script
-    window.electron.ipcRenderer.onceDeploy('deploy', (arg) => {
-      // eslint-disable-next-line no-console
-      console.log(arg);
-      setContractAddress(String(arg));
+    window.electron.ipcRenderer.onceDeploy('deploy', (arg: any) => {
+      const [success, msg] = arg;
+
+      if (success) {
+        // eslint-disable-next-line no-console
+        console.log(msg);
+        toast.success('Success!');
+        setContractAddress(String(msg));
+      } else {
+        toast.error('Error: ' + msg);
+      }
     });
     window.electron.ipcRenderer.sendDeployMessage('deploy', [walletAddress]);
   };
 
   const withdraw = () => {
-    window.electron.ipcRenderer.onceWithdraw('withdraw', (arg) => {
+    window.electron.ipcRenderer.onceWithdraw('withdraw', (arg: any) => {
+      const [success, msg] = arg;
+
       // eslint-disable-next-line no-console
-      console.log(arg);
-      setWithdrawMessage(String(arg));
+      console.log(msg);
+
+      if (success) {
+        toast.success('Success!');
+        setWithdrawMessage(String(msg));
+      } else {
+        toast.error('Error: ' + msg);
+      }
     });
 
     window.electron.ipcRenderer.sendWithdrawMessage('withdraw', [
@@ -74,25 +91,19 @@ function Hello() {
       <button id="withdrawButton" onClick={withdraw}>
         Withdraw Funds
       </button>
-      <br />
-
-      <textarea
-        rows={30}
-        cols={80}
-        value={withdrawMessage}
-        readOnly
-        hidden={withdrawMessage === ''}
-      />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
+    <div>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Hello />} />
+        </Routes>
+      </Router>
+      <ToastContainer />
+    </div>
   );
 }
