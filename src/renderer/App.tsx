@@ -78,7 +78,7 @@ function Hello() {
 
       <textarea
         rows={30}
-        cols={100}
+        cols={80}
         value={withdrawMessage}
         readOnly
         hidden={withdrawMessage === ''}

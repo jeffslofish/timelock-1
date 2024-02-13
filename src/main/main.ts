@@ -33,7 +33,7 @@ let mainWindow: BrowserWindow | null = null;
 ipcMain.on('contractAddress', async (event, arg) => {
   const contractAddress = store.get('contract_address');
 
-  console.log('on ontract address: ', contractAddress);
+  console.log('on contract address: ', contractAddress);
   event.reply('contractAddress', contractAddress);
 });
 
@@ -68,7 +68,7 @@ ipcMain.on('withdraw', async (event, arg) => {
   const PRIVATE_KEY = process.env.PRIVATE_KEY;
   const [CONTRACT_ADDRESS] = arg;
 
-  console.log('contract adress: ', CONTRACT_ADDRESS);
+  console.log('contract address: ', CONTRACT_ADDRESS);
 
   const contract = require('../../artifacts/contracts/timelock.sol/TimeLock.json');
 
@@ -136,6 +136,7 @@ const createWindow = async () => {
     show: false,
     width: 1024,
     height: 728,
+    resizable: false,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged

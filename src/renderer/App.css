@@ -6,16 +6,18 @@ body {
   position: relative;
   color: white;
   height: 100vh;
-  background: black;
+  background-image: url('./images/polybg.jpg');
   font-family: sans-serif;
   overflow-y: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-position: center; /* Center the background image horizontally and vertically */
+  background-size: 120%; /* Zoom in on the background image by 20% */
 }
 
 button {
-  background-color: white;
+  background-color: rgb(30, 184, 68);
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
