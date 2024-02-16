@@ -8,6 +8,15 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import {
+  ColumnDef,
+  RowSelectionState,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import { Checkbox } from '@mui/material';
 
 function Hello() {
   const [walletAddress, setWallettAddress] = useState('');
@@ -15,17 +24,88 @@ function Hello() {
   const [withdrawMessage, setWithdrawMessage] = useState('');
   const [releaseTime, setReleaseTime] = useState<Dayjs | null>(null);
   const [balance, setBalance] = useState(0);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  type Contract = {
+    address: string;
+    balance: number;
+  };
+
+  const [data, setData] = useState<Contract[]>([]);
 
   let apiKey = '';
   let apiURL = '';
 
-  if (contractAddress == '') {
+  // const tempData = [
+  //   {
+  //     checked: false,
+  //     address: '0x205872059255',
+  //     balance: 5,
+  //   },
+  //   {
+  //     checked: true,
+  //     address: '0x384738742059255',
+  //     balance: 10,
+  //   },
+  //   {
+  //     checked: false,
+  //     address: '0x49584985458',
+  //     balance: 15,
+  //   },
+  // ];
+
+  const [contracts, setContracts] = useState<Contract[]>([]);
+
+  const columnHelper = createColumnHelper<Contract>();
+
+  const columns = [
+    {
+      id: 'select-col',
+      header: ({ table }: any) => (
+        <Checkbox
+          checked={table.getIsAllRowsSelected()}
+          indeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()} //or getToggleAllPageRowsSelectedHandler
+        />
+      ),
+      cell: ({ row }: any) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          disabled={!row.getCanSelect()}
+          onChange={row.getToggleSelectedHandler()}
+        />
+      ),
+    },
+    columnHelper.accessor('address', {
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor((row) => row.balance, {
+      id: 'balance',
+      cell: (info) => <i>{info.getValue()}</i>,
+      header: () => <span>Balance</span>,
+      footer: (info) => info.column.id,
+    }),
+  ];
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection, //hoist up the row selection state to your own scope
+    state: {
+      rowSelection, //pass the row selection state back to the table instance
+    },
+  });
+
+  if (data && !data.length) {
     window.electron.ipcRenderer.onceContractAddress(
       'contractAddress',
-      (arg) => {
+      (arg: any) => {
         // eslint-disable-next-line no-console
         console.log(arg);
-        setContractAddress(String(arg));
+        setData(arg);
       },
     );
     window.electron.ipcRenderer.sendContractAddressMessage(
@@ -44,6 +124,8 @@ function Hello() {
         console.log(msg);
         toast.success('Success!');
         setContractAddress(String(msg));
+
+        setData([...data, { address: msg, balance: 0 }]);
       } else {
         toast.error('Error: ' + msg);
       }
@@ -67,7 +149,7 @@ function Hello() {
       console.log(msg);
 
       if (success) {
-        toast.success('Success!');
+        toast.success('Withdraw Successful!');
         setWithdrawMessage(String(msg));
       } else {
         toast.error('Error: ' + msg);
@@ -82,25 +164,34 @@ function Hello() {
   const checkBalance = () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceCheckBalance('checkBalance', (arg: any) => {
-      const [success, msg] = arg;
+      const [success, contractAddress, balance] = arg;
 
       if (success) {
         // eslint-disable-next-line no-console
-        console.log(msg);
-        toast.success('Success!');
-        setBalance(msg);
+        console.log(arg);
+        toast.success('Balance Check Successful!');
+        //setBalance(msg);
+
+        const i = data.findIndex((x) => x.address === contractAddress);
+        const newData = data;
+        newData[i] = { address: contractAddress, balance: balance };
+        setData(newData);
       } else {
-        toast.error('Error: ' + msg);
+        toast.error('Error: ' + arg);
       }
     });
 
-    if (contractAddress) {
-      window.electron.ipcRenderer.sendCheckBalanceMessage('checkBalance', [
-        contractAddress,
-      ]);
-    } else {
-      toast.error('No contract address found to check balance.');
-    }
+    const selectedRows = table.getSelectedRowModel().rows;
+
+    selectedRows.forEach((row) => {
+      if (row.original.address) {
+        window.electron.ipcRenderer.sendCheckBalanceMessage('checkBalance', [
+          row.original.address,
+        ]);
+      } else {
+        toast.error('No contract address found to check balance.');
+      }
+    });
   };
 
   const changeWalletAddress = ({ target }: ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +235,36 @@ function Hello() {
       </button>
 
       <p>Balance: {balance}</p>
+
+      <table>
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

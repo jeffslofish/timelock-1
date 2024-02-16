@@ -33,10 +33,12 @@ class AppUpdater {
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('contractAddress', async (event, arg) => {
-  const contractAddress = store.get('contract_address');
+  const data = store.get('data');
 
-  console.log('on contract address: ', contractAddress);
-  event.reply('contractAddress', contractAddress);
+  if (data) {
+    console.log('data: ', data);
+    event.reply('contractAddress', data);
+  }
 });
 
 ipcMain.on('deploy', async (event, arg) => {
@@ -52,7 +54,15 @@ ipcMain.on('deploy', async (event, arg) => {
     const timelock = await TimeLock.deploy(walletAddress, releaseTime);
     console.log('Contract deployed to address:', timelock.address);
 
-    store.set('contract_address', timelock.address);
+    if (store.get('data')) {
+      store.set('data', [
+        ...store.get('data'),
+        { address: timelock.address, balance: 0 },
+      ]);
+    } else {
+      store.set('data', [{ address: timelock.address, balance: 0 }]);
+    }
+
     event.reply('deploy', [true, msgTemplate(timelock.address)]);
   } catch (error) {
     event.reply('deploy', [false, error]);
@@ -104,7 +114,7 @@ ipcMain.on('checkBalance', async (event, arg) => {
     if (response.ok) {
       const result = await response.json();
       console.log(result);
-      event.reply('checkBalance', [true, result.result]);
+      event.reply('checkBalance', [true, contractAddress, result.result]);
     } else {
       event.reply('checkBalance', [false, response]);
     }
