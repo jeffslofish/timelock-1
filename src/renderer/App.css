@@ -12,8 +12,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-position: center; /* Center the background image horizontally and vertically */
-  background-size: 120%; /* Zoom in on the background image by 20% */
+  background-position: center;
+  background-size: 110%;
 }
 
 button {
@@ -58,7 +58,7 @@ a:hover {
   align-items: center;
   margin: 20px 0;
 }
-
-.date-time-picker {
-  background-color: white;
-}
+/*
+.MuiPickersLayout-root {
+  background-color: rgba(0, 0, 0, 0.8);
+} */
