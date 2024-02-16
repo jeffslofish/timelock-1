@@ -14,6 +14,7 @@ function Hello() {
   const [contractAddress, setContractAddress] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
   const [releaseTime, setReleaseTime] = useState<Dayjs | null>(null);
+  const [balance, setBalance] = useState(0);
 
   let apiKey = '';
   let apiURL = '';
@@ -78,6 +79,30 @@ function Hello() {
     ]);
   };
 
+  const checkBalance = () => {
+    // calling IPC exposed from preload script
+    window.electron.ipcRenderer.onceCheckBalance('checkBalance', (arg: any) => {
+      const [success, msg] = arg;
+
+      if (success) {
+        // eslint-disable-next-line no-console
+        console.log(msg);
+        toast.success('Success!');
+        setBalance(msg);
+      } else {
+        toast.error('Error: ' + msg);
+      }
+    });
+
+    if (contractAddress) {
+      window.electron.ipcRenderer.sendCheckBalanceMessage('checkBalance', [
+        contractAddress,
+      ]);
+    } else {
+      toast.error('No contract address found to check balance.');
+    }
+  };
+
   const changeWalletAddress = ({ target }: ChangeEvent<HTMLInputElement>) => {
     setWallettAddress(target.value);
   };
@@ -101,7 +126,7 @@ function Hello() {
         />
       </div>
       <br />
-      <button id="deployButton" onClick={deploy}>
+      <button type="button" id="deployButton" onClick={deploy}>
         Deploy Contract
       </button>
       <div>
@@ -109,9 +134,16 @@ function Hello() {
         <p>{contractAddress}</p>
       </div>
 
-      <button id="withdrawButton" onClick={withdraw}>
+      <button type="button" id="withdrawButton" onClick={withdraw}>
         Withdraw Funds
       </button>
+
+      <br />
+      <button type="button" id="checkBalance" onClick={checkBalance}>
+        Check balance
+      </button>
+
+      <p>Balance: {balance}</p>
     </div>
   );
 }
