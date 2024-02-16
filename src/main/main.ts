@@ -17,6 +17,7 @@ import { resolveHtmlPath } from './util';
 import { cache } from 'webpack';
 import { release } from 'os';
 const { ethers } = require('hardhat');
+require('@nomiclabs/hardhat-etherscan');
 const Store = require('electron-store');
 
 const store = new Store();
@@ -85,6 +86,30 @@ ipcMain.on('withdraw', async (event, arg) => {
     event.reply('withdraw', [true, 'Withdraw complete']);
   } catch (msg) {
     event.reply('withdraw', [false, msg]);
+  }
+});
+
+ipcMain.on('checkBalance', async (event, arg) => {
+  const [contractAddress] = arg;
+
+  const msgTemplate = (pingPong: string) => `${pingPong}`;
+  console.log(msgTemplate(arg));
+
+  const url = `https://api-testnet.polygonscan.com/api?module=account&action=balance&address=${contractAddress}&apikey=${process.env.POLYGONSCAN_API_KEY}`;
+
+  // Start deployment, returning a promise that resolves to a contract object
+  try {
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log(result);
+      event.reply('checkBalance', [true, result.result]);
+    } else {
+      event.reply('checkBalance', [false, response]);
+    }
+  } catch (err) {
+    event.reply('checkBalance', [false, err]);
   }
 });
 
