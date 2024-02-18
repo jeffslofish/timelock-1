@@ -62,7 +62,14 @@ function Hello() {
       ),
     },
     columnHelper.accessor('address', {
-      cell: (info) => info.getValue(),
+      cell: (info) => (
+        <button onClick={() => navigator.clipboard.writeText(info.getValue())}>
+          {info.getValue().slice(0, 5)}...
+          {info
+            .getValue()
+            .slice(info.getValue().length - 5, info.getValue().length)}
+        </button>
+      ),
       header: () => <span>Address</span>,
       footer: (info) => info.column.id,
     }),
