@@ -110,16 +110,39 @@ ipcMain.on('withdraw', async (event, arg) => {
 ipcMain.on('checkBalance', async (event, arg) => {
   const contracts = arg;
 
+  const api =
+    process.env.API_MODE === 'testnet'
+      ? 'https://api-testnet.polygonscan.com/api'
+      : 'https://api.polygonscan.com/api';
+
+  const getPriceApi = `${api}?module=stats&action=maticprice&apikey=${process.env.POLYGONSCAN_API_KEY}`;
+
+  let price = 0;
+
+  try {
+    const response = await fetch(getPriceApi);
+    if (response.ok) {
+      const result = await response.json();
+      price = result.result;
+      console.log(result);
+    } else {
+      console.log('response for getting price not ok' + response);
+    }
+  } catch (err) {
+    console.log(err);
+    event.reply('checkBalance', [false, err]);
+  }
+
   for (let i = 0; i < contracts.length; i++) {
     const contractAddress = contracts[i];
 
     console.log('checking balance for ' + contractAddress);
 
-    const url = `https://api-testnet.polygonscan.com/api?module=account&action=balance&address=${contractAddress}&apikey=${process.env.POLYGONSCAN_API_KEY}`;
+    const getBalanceApi = `${api}?module=account&action=balance&address=${contractAddress}&apikey=${process.env.POLYGONSCAN_API_KEY}`;
 
     // Start deployment, returning a promise that resolves to a contract object
     try {
-      const response = await fetch(url);
+      const response = await fetch(getBalanceApi);
 
       if (response.ok) {
         const result = await response.json();
@@ -156,7 +179,7 @@ ipcMain.on('checkBalance', async (event, arg) => {
 
   const data = store.get('data');
   console.log('replying ' + data);
-  event.reply('checkBalance', [true, data]);
+  event.reply('checkBalance', [true, data, price]);
 });
 
 ipcMain.on('updateData', async (event, arg) => {

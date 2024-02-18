@@ -20,13 +20,14 @@ import {
 import { Checkbox } from '@mui/material';
 
 function Hello() {
+  const WEI = 1000000000000000000;
   const [walletAddress, setWallettAddress] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
   const [contractReleaseTime, setContractReleaseTime] =
     useState<dayjs.Dayjs | null>(dayjs(Date.now()));
-
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [currentPrice, setCurrentPrice] = useState(0);
 
   type Contract = {
     address: string;
@@ -81,7 +82,11 @@ function Hello() {
     }),
     columnHelper.accessor((row) => row.balance, {
       id: 'balance',
-      cell: (info) => <i>{info.getValue()}</i>,
+      cell: (info) => (
+        <i>
+          {info.getValue() / WEI} (${(info.getValue() / WEI) * currentPrice})
+        </i>
+      ),
       header: () => <span>Balance</span>,
       footer: (info) => info.column.id,
     }),
@@ -173,12 +178,12 @@ function Hello() {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceCheckBalance('checkBalance', (arg: any) => {
       // const [success, contractAddress, balance] = arg;
-      const [success, contracts] = arg;
+      const [success, contracts, price] = arg;
 
-      console.log('checkbalance for ' + contracts);
       if (success) {
+        console.log('checkbalance for ' + contracts);
         // eslint-disable-next-line no-console
-        console.log(arg);
+
         toast.success('Balance Check Successful!');
 
         // let updatedList = data.map((contracts) => {
@@ -187,7 +192,7 @@ function Hello() {
         //   }
         //   return item;
         // });
-
+        setCurrentPrice(price);
         setData(contracts);
       } else {
         toast.error('Error: ' + arg);
