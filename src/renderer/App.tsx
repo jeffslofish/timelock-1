@@ -23,15 +23,14 @@ function Hello() {
   const [walletAddress, setWallettAddress] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
-  const defaultReleaseTime = dayjs('2024-02-17T4:20:00');
-  const [releaseTime, setReleaseTime] = useState<dayjs.Dayjs | null>(
-    defaultReleaseTime,
-  );
+  const [contractReleaseTime, setContractReleaseTime] =
+    useState<dayjs.Dayjs | null>(dayjs(Date.now()));
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   type Contract = {
     address: string;
+    releaseTime: number;
     balance: number;
   };
 
@@ -65,6 +64,12 @@ function Hello() {
     columnHelper.accessor('address', {
       cell: (info) => info.getValue(),
       header: () => <span>Address</span>,
+      footer: (info) => info.column.id,
+    }),
+    columnHelper.accessor((row) => row.releaseTime, {
+      id: 'releaseTime',
+      cell: (info) => <i>{dayjs.unix(info.getValue()).format('LLLL')}</i>,
+      header: () => <span>Release Time</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.balance, {
@@ -104,24 +109,27 @@ function Hello() {
   const deploy = () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceDeploy('deploy', (arg: any) => {
-      const [success, msg] = arg;
+      const [success, address, releaseTime] = arg;
 
       if (success) {
         // eslint-disable-next-line no-console
-        console.log(msg);
+        console.log(arg);
         toast.success('Deploy Successful!');
-        setContractAddress(String(msg));
+        setContractAddress(address);
 
-        setData([...data, { address: msg, balance: 0 }]);
+        setData([
+          ...data,
+          { address: address, releaseTime: releaseTime, balance: 0 },
+        ]);
       } else {
-        toast.error('Error: ' + msg);
+        toast.error('Error: ' + arg);
       }
     });
 
-    if (releaseTime) {
+    if (contractReleaseTime) {
       window.electron.ipcRenderer.sendDeployMessage('deploy', [
         walletAddress,
-        releaseTime.unix(),
+        contractReleaseTime.unix(),
       ]);
     } else {
       toast.error('Please choose a release time');
@@ -186,24 +194,12 @@ function Hello() {
       const row = selectedRows[i];
       addresses.push(row.original.address);
     }
-    //selectedRows.forEach(async (row) => {
-    // if (row.original.address) {
-    //   const DEF_DELAY = 1000;
 
-    //   function sleep(ms: any) {
-    //     return new Promise((resolve) => setTimeout(resolve, ms || DEF_DELAY));
-    //   }
-
-    //   await sleep(2000);
     console.log('sending check balance for  addr: ' + addresses);
     window.electron.ipcRenderer.sendCheckBalanceMessage(
       'checkBalance',
       addresses,
     );
-    // } else {
-    //   toast.error('No contract address found to check balance.');
-    // }
-    // }
   };
 
   const changeWalletAddress = ({ target }: ChangeEvent<HTMLInputElement>) => {
@@ -237,8 +233,8 @@ function Hello() {
       <div className="date-time-picker" style={{ paddingTop: '20px' }}>
         <DateTimePicker
           label="Choose Unlock Date:Time"
-          value={releaseTime}
-          onChange={(newValue) => setReleaseTime(newValue)}
+          value={contractReleaseTime}
+          onChange={(newValue) => setContractReleaseTime(dayjs(newValue))}
         />
       </div>
       <br />

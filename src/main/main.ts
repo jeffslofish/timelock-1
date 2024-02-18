@@ -57,13 +57,15 @@ ipcMain.on('deploy', async (event, arg) => {
     if (store.get('data')) {
       store.set('data', [
         ...store.get('data'),
-        { address: timelock.address, balance: 0 },
+        { address: timelock.address, releaseTime: releaseTime, balance: 0 },
       ]);
     } else {
-      store.set('data', [{ address: timelock.address, balance: 0 }]);
+      store.set('data', [
+        { address: timelock.address, releaseTime: releaseTime, balance: 0 },
+      ]);
     }
 
-    event.reply('deploy', [true, msgTemplate(timelock.address)]);
+    event.reply('deploy', [true, timelock.address, releaseTime]);
   } catch (error) {
     event.reply('deploy', [false, error]);
   }
