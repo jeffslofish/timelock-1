@@ -1,19 +1,20 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
 import './App.css';
-import { useState, ChangeEvent, ReactNode } from 'react';
+import { useState, ChangeEvent, ReactNode, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+// import { TextField, makeStyles } from '@mui/material'; might need later
 import {
   ColumnDef,
   RowSelectionState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  selectRowsFn,
   useReactTable,
 } from '@tanstack/react-table';
 import { Checkbox } from '@mui/material';
@@ -22,8 +23,11 @@ function Hello() {
   const [walletAddress, setWallettAddress] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
-  const [releaseTime, setReleaseTime] = useState<Dayjs | null>(null);
-  const [balance, setBalance] = useState(0);
+  const defaultReleaseTime = dayjs('2024-02-17T4:20:00');
+  const [releaseTime, setReleaseTime] = useState<dayjs.Dayjs | null>(
+    defaultReleaseTime,
+  );
+
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   type Contract = {
@@ -35,24 +39,6 @@ function Hello() {
 
   let apiKey = '';
   let apiURL = '';
-
-  // const tempData = [
-  //   {
-  //     checked: false,
-  //     address: '0x205872059255',
-  //     balance: 5,
-  //   },
-  //   {
-  //     checked: true,
-  //     address: '0x384738742059255',
-  //     balance: 10,
-  //   },
-  //   {
-  //     checked: false,
-  //     address: '0x49584985458',
-  //     balance: 15,
-  //   },
-  // ];
 
   const [contracts, setContracts] = useState<Contract[]>([]);
 
@@ -78,6 +64,7 @@ function Hello() {
     },
     columnHelper.accessor('address', {
       cell: (info) => info.getValue(),
+      header: () => <span>Address</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.balance, {
@@ -99,7 +86,7 @@ function Hello() {
     },
   });
 
-  if (data && !data.length) {
+  useEffect(() => {
     window.electron.ipcRenderer.onceContractAddress(
       'contractAddress',
       (arg: any) => {
@@ -112,7 +99,7 @@ function Hello() {
       'contractAddress',
       [],
     );
-  }
+  }, []);
 
   const deploy = () => {
     // calling IPC exposed from preload script
@@ -122,7 +109,7 @@ function Hello() {
       if (success) {
         // eslint-disable-next-line no-console
         console.log(msg);
-        toast.success('Success!');
+        toast.success('Deploy Successful!');
         setContractAddress(String(msg));
 
         setData([...data, { address: msg, balance: 0 }]);
@@ -156,26 +143,37 @@ function Hello() {
       }
     });
 
-    window.electron.ipcRenderer.sendWithdrawMessage('withdraw', [
-      contractAddress,
-    ]);
+    const selectedRows = table.getSelectedRowModel().rows;
+
+    let addresses = [];
+    for (let i = 0; i < selectedRows.length; i++) {
+      const row = selectedRows[i];
+      addresses.push(row.original.address);
+    }
+
+    window.electron.ipcRenderer.sendWithdrawMessage('withdraw', [addresses]);
   };
 
-  const checkBalance = () => {
+  const checkBalance = async () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceCheckBalance('checkBalance', (arg: any) => {
-      const [success, contractAddress, balance] = arg;
+      // const [success, contractAddress, balance] = arg;
+      const [success, contracts] = arg;
 
+      console.log('checkbalance for ' + contracts);
       if (success) {
         // eslint-disable-next-line no-console
         console.log(arg);
         toast.success('Balance Check Successful!');
-        //setBalance(msg);
 
-        const i = data.findIndex((x) => x.address === contractAddress);
-        const newData = data;
-        newData[i] = { address: contractAddress, balance: balance };
-        setData(newData);
+        // let updatedList = data.map((contracts) => {
+        //   if (contracts.address == contractAddress) {
+        //     return { ...item, balance: balance };
+        //   }
+        //   return item;
+        // });
+
+        setData(contracts);
       } else {
         toast.error('Error: ' + arg);
       }
@@ -183,19 +181,46 @@ function Hello() {
 
     const selectedRows = table.getSelectedRowModel().rows;
 
-    selectedRows.forEach((row) => {
-      if (row.original.address) {
-        window.electron.ipcRenderer.sendCheckBalanceMessage('checkBalance', [
-          row.original.address,
-        ]);
-      } else {
-        toast.error('No contract address found to check balance.');
-      }
-    });
+    let addresses = [];
+    for (let i = 0; i < selectedRows.length; i++) {
+      const row = selectedRows[i];
+      addresses.push(row.original.address);
+    }
+    //selectedRows.forEach(async (row) => {
+    // if (row.original.address) {
+    //   const DEF_DELAY = 1000;
+
+    //   function sleep(ms: any) {
+    //     return new Promise((resolve) => setTimeout(resolve, ms || DEF_DELAY));
+    //   }
+
+    //   await sleep(2000);
+    console.log('sending check balance for  addr: ' + addresses);
+    window.electron.ipcRenderer.sendCheckBalanceMessage(
+      'checkBalance',
+      addresses,
+    );
+    // } else {
+    //   toast.error('No contract address found to check balance.');
+    // }
+    // }
   };
 
   const changeWalletAddress = ({ target }: ChangeEvent<HTMLInputElement>) => {
     setWallettAddress(target.value);
+  };
+
+  const clearRow = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+
+    const newData = data.filter(
+      (obj) =>
+        !selectedRows.some((obj2) => obj.address === obj2.original.address),
+    );
+
+    setData(newData);
+    console.log('sending updatedata message for data: ' + newData);
+    window.electron.ipcRenderer.sendUpdateDataMessage('updateData', newData);
   };
 
   return (
@@ -209,32 +234,47 @@ function Hello() {
       />
       <br />
 
-      <div className="date-time-picker">
+      <div className="date-time-picker" style={{ paddingTop: '20px' }}>
         <DateTimePicker
-          label="Controlled picker"
+          label="Choose Unlock Date:Time"
           value={releaseTime}
           onChange={(newValue) => setReleaseTime(newValue)}
         />
       </div>
       <br />
-      <button type="button" id="deployButton" onClick={deploy}>
+      <button
+        type="button"
+        id="deployButton"
+        className="button"
+        onClick={deploy}
+      >
         Deploy Contract
       </button>
-      <div>
-        <p>Contract Address:</p>
-        <p>{contractAddress}</p>
-      </div>
 
-      <button type="button" id="withdrawButton" onClick={withdraw}>
+      <br />
+      <button
+        type="button"
+        id="withdrawButton"
+        className="button"
+        onClick={withdraw}
+      >
         Withdraw Funds
       </button>
 
       <br />
-      <button type="button" id="checkBalance" onClick={checkBalance}>
+      <button
+        type="button"
+        id="checkBalance"
+        className="button"
+        onClick={checkBalance}
+      >
         Check balance
       </button>
 
-      <p>Balance: {balance}</p>
+      <br />
+      <button type="button" id="clearRow" className="button" onClick={clearRow}>
+        Erase Row
+      </button>
 
       <table>
         <thead>

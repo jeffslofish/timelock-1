@@ -6,6 +6,7 @@ export type DeployChannel = 'deploy';
 export type WithdrawChannel = 'withdraw';
 export type ContractAddressChannel = 'contractAddress';
 export type CheckBalanceChannel = 'checkBalance';
+export type UpdateDataChannel = 'updateData';
 
 const electronHandler = {
   ipcRenderer: {
@@ -22,6 +23,9 @@ const electronHandler = {
       ipcRenderer.send(channel, ...args);
     },
     sendCheckBalanceMessage(channel: CheckBalanceChannel, ...args: unknown[]) {
+      ipcRenderer.send(channel, ...args);
+    },
+    sendUpdateDataMessage(channel: UpdateDataChannel, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);
     },
 
@@ -67,6 +71,18 @@ const electronHandler = {
         ipcRenderer.removeListener(channel, subscription);
       };
     },
+    onUpdateData(
+      channel: UpdateDataChannel,
+      func: (...args: unknown[]) => void,
+    ) {
+      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+        func(...args);
+      ipcRenderer.on(channel, subscription);
+
+      return () => {
+        ipcRenderer.removeListener(channel, subscription);
+      };
+    },
 
     onceDeploy(channel: DeployChannel, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
@@ -82,6 +98,13 @@ const electronHandler = {
     },
     onceCheckBalance(
       channel: CheckBalanceChannel,
+      func: (...args: unknown[]) => void,
+    ) {
+      ipcRenderer.once(channel, (_event, ...args) => func(...args));
+    },
+
+    onceUpdateData(
+      channel: UpdateDataChannel,
       func: (...args: unknown[]) => void,
     ) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));

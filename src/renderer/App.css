@@ -58,7 +58,15 @@ a:hover {
   align-items: center;
   margin: 20px 0;
 }
-/*
+
 .MuiPickersLayout-root {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgb(255, 255, 255);
+}
+
+.dateTimePickerLabel {
+  color: rgb(244, 244, 244);
+}
+
+/* .MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-shrin.MuiInputLabel-sizeMedium.MuiInputLabel-outlined.MuiFormLabel-colorPrimary {
+  color: white;
 } */

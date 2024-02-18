@@ -72,9 +72,9 @@ ipcMain.on('deploy', async (event, arg) => {
 ipcMain.on('withdraw', async (event, arg) => {
   const API_URL = process.env.API_URL;
   const PRIVATE_KEY = process.env.PRIVATE_KEY;
-  const [CONTRACT_ADDRESS] = arg;
+  const [addresses] = arg;
 
-  console.log('contract address: ', CONTRACT_ADDRESS);
+  console.log('contract addresses: ', addresses);
 
   const contract = require('../../artifacts/contracts/timelock.sol/TimeLock.json');
 
@@ -84,43 +84,84 @@ ipcMain.on('withdraw', async (event, arg) => {
   // signer - you
   const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 
-  // contract instance
-  const timelockContract = new ethers.Contract(
-    CONTRACT_ADDRESS,
-    contract.abi,
-    signer,
-  );
+  for (let i = 0; i < addresses.length; i++) {
+    // contract instance
+    const timelockContract = new ethers.Contract(
+      addresses[i],
+      contract.abi,
+      signer,
+    );
 
-  try {
-    await timelockContract.withdraw();
-    event.reply('withdraw', [true, 'Withdraw complete']);
-  } catch (msg) {
-    event.reply('withdraw', [false, msg]);
+    try {
+      console.log('withdrawing on address: ' + addresses[i]);
+      await timelockContract.withdraw();
+      console.log('withdraw successful');
+    } catch (msg) {
+      console.log('withdraw NOT successful');
+      event.reply('withdraw', [false, msg]);
+    }
   }
+
+  event.reply('withdraw', [true, 'Withdraw complete']);
 });
 
 ipcMain.on('checkBalance', async (event, arg) => {
-  const [contractAddress] = arg;
+  const contracts = arg;
 
-  const msgTemplate = (pingPong: string) => `${pingPong}`;
-  console.log(msgTemplate(arg));
+  for (let i = 0; i < contracts.length; i++) {
+    const contractAddress = contracts[i];
 
-  const url = `https://api-testnet.polygonscan.com/api?module=account&action=balance&address=${contractAddress}&apikey=${process.env.POLYGONSCAN_API_KEY}`;
+    console.log('checking balance for ' + contractAddress);
 
-  // Start deployment, returning a promise that resolves to a contract object
-  try {
-    const response = await fetch(url);
+    const url = `https://api-testnet.polygonscan.com/api?module=account&action=balance&address=${contractAddress}&apikey=${process.env.POLYGONSCAN_API_KEY}`;
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log(result);
-      event.reply('checkBalance', [true, contractAddress, result.result]);
-    } else {
-      event.reply('checkBalance', [false, response]);
+    // Start deployment, returning a promise that resolves to a contract object
+    try {
+      const response = await fetch(url);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);
+
+        if (store.get('data')) {
+          const currStore = store.get('data');
+
+          const updatedStore = currStore.map((item: any) => {
+            if (item.address == contractAddress) {
+              return { ...item, balance: result.result };
+            }
+            return item;
+          });
+
+          store.set('data', updatedStore);
+        } else {
+          store.set('data', [
+            { address: contractAddress, balance: result.result },
+          ]);
+        }
+
+        // console.log('replying ' + contractAddress + ' ' + result.result);
+        // event.reply('checkBalance', [true, contractAddress, result.result]);
+      } else {
+        console.log('response not ok');
+        // event.reply('checkBalance', [false, response]);
+      }
+    } catch (err) {
+      console.log('caught error ' + err);
+      // event.reply('checkBalance', [false, err]);
     }
-  } catch (err) {
-    event.reply('checkBalance', [false, err]);
   }
+
+  const data = store.get('data');
+  console.log('replying ' + data);
+  event.reply('checkBalance', [true, data]);
+});
+
+ipcMain.on('updateData', async (event, arg) => {
+  const data = arg;
+
+  console.log('updating data to :', data);
+  store.set('data', data);
 });
 
 if (process.env.NODE_ENV === 'production') {
