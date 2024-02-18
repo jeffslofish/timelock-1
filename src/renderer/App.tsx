@@ -1,3 +1,8 @@
+import withdrawLogo from '../../assets/icons/withdraw.png';
+import checkBalanceLogo from '../../assets/icons/check-balance.png';
+import deployLogo from '../../assets/icons/deploy.png';
+import deleteRowsLogo from '../../assets/icons/delete-rows.png';
+
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { useState, ChangeEvent, ReactNode, useEffect } from 'react';
@@ -233,86 +238,105 @@ function Hello() {
 
   return (
     <div>
-      <label htmlFor="walletAddressInput">Wallet Address:</label>
-      <input
-        type="text"
-        id="wallettAddressInput"
-        value={walletAddress}
-        onChange={changeWalletAddress}
-      />
-      <br />
+      <div className="deployArea">
+        <div className="walletAddressArea">
+          <label htmlFor="walletAddressInput">Wallet Address:</label>
+          <input
+            type="text"
+            id="wallettAddressInput"
+            value={walletAddress}
+            onChange={changeWalletAddress}
+          />
+        </div>
 
-      <div className="date-time-picker" style={{ paddingTop: '20px' }}>
-        <DateTimePicker
-          label="Choose Unlock Date:Time"
-          value={contractReleaseTime}
-          onChange={(newValue) => setContractReleaseTime(dayjs(newValue))}
-        />
+        <div className="date-time-picker" style={{ paddingTop: '20px' }}>
+          <DateTimePicker
+            label="Choose Unlock Date:Time"
+            value={contractReleaseTime}
+            onChange={(newValue) => setContractReleaseTime(dayjs(newValue))}
+          />
+        </div>
+        <button
+          type="button"
+          id="deployButton"
+          className="button"
+          onClick={deploy}
+        >
+          <img src={deployLogo} alt="deploy" className="button-icon" />
+          Deploy Contract
+        </button>
       </div>
-      <br />
-      <button
-        type="button"
-        id="deployButton"
-        className="button"
-        onClick={deploy}
-      >
-        Deploy Contract
-      </button>
 
-      <br />
-      <button
-        type="button"
-        id="withdrawButton"
-        className="button"
-        onClick={withdraw}
-      >
-        Withdraw Funds
-      </button>
+      <div className="tableInteractionArea">
+        <div className="buttonArea">
+          <button
+            type="button"
+            id="withdrawButton"
+            className="button"
+            onClick={withdraw}
+          >
+            <img src={withdrawLogo} alt="withdraw" className="button-icon" />
+            Withdraw Funds
+          </button>
 
-      <br />
-      <button
-        type="button"
-        id="checkBalance"
-        className="button"
-        onClick={checkBalance}
-      >
-        Check balance
-      </button>
+          <button
+            type="button"
+            id="checkBalance"
+            className="button"
+            onClick={checkBalance}
+          >
+            <img
+              src={checkBalanceLogo}
+              alt="check balance"
+              className="button-icon"
+            />
+            Check balance
+          </button>
 
-      <br />
-      <button type="button" id="clearRow" className="button" onClick={clearRow}>
-        Erase Row
-      </button>
-
-      <table>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <button
+            type="button"
+            id="clearRow"
+            className="button"
+            onClick={clearRow}
+          >
+            <img
+              src={deleteRowsLogo}
+              alt="delete rows"
+              className="button-icon"
+            />
+            Erase Row
+          </button>
+        </div>
+        <table>
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

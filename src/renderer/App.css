@@ -70,3 +70,33 @@ a:hover {
 /* .MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-shrin.MuiInputLabel-sizeMedium.MuiInputLabel-outlined.MuiFormLabel-colorPrimary {
   color: white;
 } */
+
+.button-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.walletAddressArea {
+  display: flex;
+  flex-direction: row;
+}
+
+.deployArea {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 20px;
+  margin-bottom: 50px;
+  padding: 40px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.tableInteractionArea {
+  padding: 40px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.buttonArea {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 10px;
+}
