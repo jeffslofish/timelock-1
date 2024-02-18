@@ -111,7 +111,7 @@ ipcMain.on('checkBalance', async (event, arg) => {
   const contracts = arg;
 
   const api =
-    process.env.API_MODE === 'testnet'
+    process.env.API_MODE === 'test'
       ? 'https://api-testnet.polygonscan.com/api'
       : 'https://api.polygonscan.com/api';
 
