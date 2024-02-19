@@ -3,6 +3,7 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 @import './DeployButton.css';
+@import './CopyContractAddressButton.css';
 
 body {
   position: relative;
@@ -18,7 +19,7 @@ body {
   background-size: 110%;
 }
 
-button {
+.buttonArea button {
   background-color: rgb(30, 184, 68);
   padding: 10px 20px;
   border-radius: 10px;
@@ -35,7 +36,7 @@ button {
   border: 1px solid rgb(0, 0, 0);
 }
 
-button:hover {
+.buttonArea button:hover {
   transform: scale(1.05);
   background-color: rgba(30, 184, 69, 0.866);
 }
@@ -122,4 +123,8 @@ a:hover {
 .p-toast-message-content {
   padding: 20px;
   border-radius: 10px;
+}
+
+table td {
+  padding: 10px 20px;
 }

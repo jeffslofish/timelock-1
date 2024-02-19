@@ -82,11 +82,31 @@ function Hello() {
     }),
     columnHelper.accessor('address', {
       cell: (info) => (
-        <button onClick={() => navigator.clipboard.writeText(info.getValue())}>
-          {info.getValue().slice(0, 5)}...
-          {info
-            .getValue()
-            .slice(info.getValue().length - 5, info.getValue().length)}
+        <button
+          className="btn"
+          onClick={() => navigator.clipboard.writeText(info.getValue())}
+        >
+          <svg
+            width="180px"
+            height="60px"
+            viewBox="0 0 180 60"
+            className="border"
+          >
+            <polyline
+              points="179,1 179,59 1,59 1,1 179,1"
+              className="bg-line"
+            />
+            <polyline
+              points="179,1 179,59 1,59 1,1 179,1"
+              className="hl-line"
+            />
+          </svg>
+          <span>
+            {info.getValue().slice(0, 5)}...
+            {info
+              .getValue()
+              .slice(info.getValue().length - 5, info.getValue().length)}
+          </span>
         </button>
       ),
       header: () => <span>Contract Address</span>,
