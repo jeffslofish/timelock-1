@@ -2,6 +2,7 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
+
 body {
   position: relative;
   color: white;
@@ -29,11 +30,13 @@ button {
   transition: all ease-in 0.1s;
   cursor: pointer;
   opacity: 0.9;
+  margin: 10px;
+  border: 1px solid rgb(0, 0, 0);
 }
 
 button:hover {
   transform: scale(1.05);
-  opacity: 1;
+  background-color: rgba(30, 184, 69, 0.866);
 }
 
 li {
@@ -67,13 +70,9 @@ a:hover {
   color: rgb(244, 244, 244);
 }
 
-/* .MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-shrin.MuiInputLabel-sizeMedium.MuiInputLabel-outlined.MuiFormLabel-colorPrimary {
-  color: white;
-} */
-
 .button-icon {
-  width: 25px;
-  height: 25px;
+  width: 50px;
+  height: 50px;
 }
 
 .walletAddressArea {
@@ -84,10 +83,10 @@ a:hover {
 .deployArea {
   display: flex;
   justify-content: space-evenly;
-  gap: 20px;
+  gap: 30px;
   margin-bottom: 50px;
   padding: 40px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(131, 141, 255, 0.735);
 }
 
 .tableInteractionArea {

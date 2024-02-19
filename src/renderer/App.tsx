@@ -12,7 +12,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
-// import { TextField, makeStyles } from '@mui/material'; might need later
+
 import {
   ColumnDef,
   RowSelectionState,
@@ -254,6 +254,7 @@ function Hello() {
             label="Choose Unlock Date:Time"
             value={contractReleaseTime}
             onChange={(newValue) => setContractReleaseTime(dayjs(newValue))}
+            showDaysOutsideCurrentMonth
           />
         </div>
         <button
@@ -263,7 +264,7 @@ function Hello() {
           onClick={deploy}
         >
           <img src={deployLogo} alt="deploy" className="button-icon" />
-          Deploy Contract
+          {/* Deploy Contract */}
         </button>
       </div>
 
@@ -276,9 +277,8 @@ function Hello() {
             onClick={withdraw}
           >
             <img src={withdrawLogo} alt="withdraw" className="button-icon" />
-            Withdraw Funds
+            {/* Withdraw Funds */}
           </button>
-
           <button
             type="button"
             id="checkBalance"
@@ -290,9 +290,8 @@ function Hello() {
               alt="check balance"
               className="button-icon"
             />
-            Check balance
+            {/* Check balance */}
           </button>
-
           <button
             type="button"
             id="clearRow"
@@ -304,7 +303,7 @@ function Hello() {
               alt="delete rows"
               className="button-icon"
             />
-            Erase Row
+            {/* Erase Row */}
           </button>
         </div>
         <table>
