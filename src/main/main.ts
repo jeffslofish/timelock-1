@@ -42,7 +42,7 @@ ipcMain.on('contractAddress', async (event, arg) => {
 });
 
 ipcMain.on('deploy', async (event, arg) => {
-  const [walletAddress, releaseTime] = arg;
+  const [walletName, walletAddress, releaseTime] = arg;
 
   const msgTemplate = (pingPong: string) => `${pingPong}`;
   console.log(msgTemplate(arg));
@@ -57,15 +57,25 @@ ipcMain.on('deploy', async (event, arg) => {
     if (store.get('data')) {
       store.set('data', [
         ...store.get('data'),
-        { address: timelock.address, releaseTime: releaseTime, balance: 0 },
+        {
+          walletName: walletName,
+          address: timelock.address,
+          releaseTime: releaseTime,
+          balance: 0,
+        },
       ]);
     } else {
       store.set('data', [
-        { address: timelock.address, releaseTime: releaseTime, balance: 0 },
+        {
+          walletName: walletName,
+          address: timelock.address,
+          releaseTime: releaseTime,
+          balance: 0,
+        },
       ]);
     }
 
-    event.reply('deploy', [true, timelock.address, releaseTime]);
+    event.reply('deploy', [true, walletName, timelock.address, releaseTime]);
   } catch (error) {
     event.reply('deploy', [false, error]);
   }
@@ -123,7 +133,7 @@ ipcMain.on('checkBalance', async (event, arg) => {
     const response = await fetch(getPriceApi);
     if (response.ok) {
       const result = await response.json();
-      price = result.result;
+      price = result.result.maticusd;
       console.log(result);
     } else {
       console.log('response for getting price not ok' + response);
@@ -160,9 +170,10 @@ ipcMain.on('checkBalance', async (event, arg) => {
 
           store.set('data', updatedStore);
         } else {
-          store.set('data', [
-            { address: contractAddress, balance: result.result },
-          ]);
+          console.log('should never get here!!!!');
+          // store.set('data', [
+          //   { address: contractAddress, balance: result.result },
+          // ]);
         }
 
         // console.log('replying ' + contractAddress + ' ' + result.result);

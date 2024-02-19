@@ -5,13 +5,16 @@ import deleteRowsLogo from '../../assets/icons/delete-rows.png';
 
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { useState, ChangeEvent, ReactNode, useEffect } from 'react';
+import { useState, ChangeEvent, ReactNode, useEffect, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
+import { Button } from 'primereact/button';
 
 import {
   ColumnDef,
@@ -27,14 +30,18 @@ import { Checkbox } from '@mui/material';
 function Hello() {
   const WEI = 1000000000000000000;
   const [walletAddress, setWallettAddress] = useState('');
-  const [contractAddress, setContractAddress] = useState('');
+  const [walletName, setWalletName] = useState('');
   const [withdrawMessage, setWithdrawMessage] = useState('');
   const [contractReleaseTime, setContractReleaseTime] =
     useState<dayjs.Dayjs | null>(dayjs(Date.now()));
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [currentPrice, setCurrentPrice] = useState(0);
 
+  const [visible, setVisible] = useState(false);
+  const toastDialog = useRef(null);
+
   type Contract = {
+    walletName: string;
     address: string;
     releaseTime: number;
     balance: number;
@@ -67,6 +74,12 @@ function Hello() {
         />
       ),
     },
+    columnHelper.accessor((row) => row.walletName, {
+      id: 'walletName',
+      cell: (info) => info.getValue(),
+      header: () => <span>Wallet Name</span>,
+      footer: (info) => info.column.id,
+    }),
     columnHelper.accessor('address', {
       cell: (info) => (
         <button onClick={() => navigator.clipboard.writeText(info.getValue())}>
@@ -76,7 +89,7 @@ function Hello() {
             .slice(info.getValue().length - 5, info.getValue().length)}
         </button>
       ),
-      header: () => <span>Address</span>,
+      header: () => <span>Contract Address</span>,
       footer: (info) => info.column.id,
     }),
     columnHelper.accessor((row) => row.releaseTime, {
@@ -89,10 +102,11 @@ function Hello() {
       id: 'balance',
       cell: (info) => (
         <i>
-          {info.getValue() / WEI} (${(info.getValue() / WEI) * currentPrice})
+          {info.getValue() / WEI} ($
+          {((info.getValue() / WEI) * currentPrice).toFixed(2)})
         </i>
       ),
-      header: () => <span>Balance</span>,
+      header: () => <span>Contract Balance</span>,
       footer: (info) => info.column.id,
     }),
   ];
@@ -126,17 +140,21 @@ function Hello() {
   const deploy = () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceDeploy('deploy', (arg: any) => {
-      const [success, address, releaseTime] = arg;
+      const [success, walletName, address, releaseTime] = arg;
 
       if (success) {
         // eslint-disable-next-line no-console
         console.log(arg);
         toast.success('Deploy Successful!');
-        setContractAddress(address);
 
         setData([
           ...data,
-          { address: address, releaseTime: releaseTime, balance: 0 },
+          {
+            walletName: walletName,
+            address: address,
+            releaseTime: releaseTime,
+            balance: 0,
+          },
         ]);
       } else {
         toast.error('Error: ' + arg);
@@ -145,6 +163,7 @@ function Hello() {
 
     if (contractReleaseTime) {
       window.electron.ipcRenderer.sendDeployMessage('deploy', [
+        walletName,
         walletAddress,
         contractReleaseTime.unix(),
       ]);
@@ -197,7 +216,7 @@ function Hello() {
         //   }
         //   return item;
         // });
-        setCurrentPrice(price);
+        setCurrentPrice(Number(price));
         setData(contracts);
       } else {
         toast.error('Error: ' + arg);
@@ -223,6 +242,10 @@ function Hello() {
     setWallettAddress(target.value);
   };
 
+  const changeWalletName = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    setWalletName(target.value);
+  };
+
   const clearRow = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
 
@@ -236,14 +259,43 @@ function Hello() {
     window.electron.ipcRenderer.sendUpdateDataMessage('updateData', newData);
   };
 
+  const accept = () => {
+    if (toastDialog && toastDialog.current) {
+      clearRow();
+      toastDialog.current.show({
+        severity: 'info',
+        detail: 'Contracts have been deleted!',
+        life: 3000,
+      });
+    }
+  };
+
+  const reject = () => {
+    if (toastDialog && toastDialog.current) {
+      toastDialog.current.show({
+        severity: 'warn',
+        detail: 'Contract(s) deletion cancelled!',
+        life: 3000,
+      });
+    }
+  };
   return (
     <div>
       <div className="deployArea">
         <div className="walletAddressArea">
+          <label htmlFor="walletAddressInput">Wallet Name:</label>
+          <input
+            type="text"
+            id="walletNameInput"
+            value={walletName}
+            onChange={changeWalletName}
+          />
+          <br />
+
           <label htmlFor="walletAddressInput">Wallet Address:</label>
           <input
             type="text"
-            id="wallettAddressInput"
+            id="walletAddressInput"
             value={walletAddress}
             onChange={changeWalletAddress}
           />
@@ -261,8 +313,13 @@ function Hello() {
           type="button"
           id="deployButton"
           className="button"
+          title="Deploy"
           onClick={deploy}
         >
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
           <img src={deployLogo} alt="deploy" className="button-icon" />
           {/* Deploy Contract */}
         </button>
@@ -274,6 +331,7 @@ function Hello() {
             type="button"
             id="withdrawButton"
             className="button"
+            title="Withdraw"
             onClick={withdraw}
           >
             <img src={withdrawLogo} alt="withdraw" className="button-icon" />
@@ -283,6 +341,7 @@ function Hello() {
             type="button"
             id="checkBalance"
             className="button"
+            title="Check Balance"
             onClick={checkBalance}
           >
             <img
@@ -292,19 +351,29 @@ function Hello() {
             />
             {/* Check balance */}
           </button>
-          <button
-            type="button"
+          <Toast ref={toastDialog} className="confirmDialog" />
+          <ConfirmDialog
+            group="declarative"
+            visible={visible}
+            onHide={() => setVisible(false)}
+            message="Are you sure you want to proceed?"
+            header="Confirmation"
+            icon="pi pi-exclamation-triangle"
+            accept={accept}
+            reject={reject}
+          />
+          <Button
             id="clearRow"
             className="button"
-            onClick={clearRow}
+            title="Clear Row(s)"
+            onClick={() => setVisible(true)}
           >
             <img
               src={deleteRowsLogo}
               alt="delete rows"
               className="button-icon"
             />
-            {/* Erase Row */}
-          </button>
+          </Button>
         </div>
         <table>
           <thead>
