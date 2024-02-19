@@ -92,6 +92,7 @@ ipcMain.on('withdraw', async (event, arg) => {
       : process.env.PROD_PRIVATE_KEY;
   const [addresses] = arg;
 
+  console.log('API_URL ' + API_URL);
   console.log('contract addresses: ', addresses);
 
   const contract = require('../../artifacts/contracts/timelock.sol/TimeLock.json');
@@ -246,9 +247,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1416,
-    height: 948,
-    //resizable: false,
+    width: 1146,
+    height: 844,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged

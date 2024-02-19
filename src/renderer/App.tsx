@@ -5,6 +5,8 @@ import deleteRowsLogo from '../../assets/icons/delete-rows.png';
 
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
+import './withdrawButton.css';
+import './ClearRowButton.css';
 import { useState, ChangeEvent, ReactNode, useEffect, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -320,7 +322,6 @@ function Hello() {
             onChange={changeWalletAddress}
           />
         </div>
-
         <div className="date-time-picker" style={{ paddingTop: '20px' }}>
           <DateTimePicker
             label="Choose Unlock Date:Time"
@@ -349,16 +350,6 @@ function Hello() {
         <div className="buttonArea">
           <button
             type="button"
-            id="withdrawButton"
-            className="button"
-            title="Withdraw"
-            onClick={withdraw}
-          >
-            <img src={withdrawLogo} alt="withdraw" className="button-icon" />
-            {/* Withdraw Funds */}
-          </button>
-          <button
-            type="button"
             id="checkBalance"
             className="button"
             title="Check Balance"
@@ -371,6 +362,17 @@ function Hello() {
             />
             {/* Check balance */}
           </button>
+          <button
+            type="button"
+            id="withdrawButton"
+            className="button"
+            title="Withdraw"
+            onClick={withdraw}
+          >
+            <img src={withdrawLogo} alt="withdraw" className="button-icon" />
+            {/* Withdraw Funds */}
+          </button>
+
           <Toast ref={toastDialog} className="confirmDialog" />
           <ConfirmDialog
             group="declarative"

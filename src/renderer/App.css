@@ -16,11 +16,12 @@ body {
   justify-content: center;
   align-items: center;
   background-position: center;
-  background-size: 110%;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .buttonArea button {
-  background-color: rgb(30, 184, 68);
+  background-color: rgba(100, 57, 57, 0.564);
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
@@ -31,14 +32,15 @@ body {
     0px 18px 88px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
   cursor: pointer;
-  opacity: 0.9;
+  /* opacity: 0.9; */
   margin: 10px;
-  border: 1px solid rgb(0, 0, 0);
+  border: 1px solid rgba(135, 167, 254);
 }
 
 .buttonArea button:hover {
   transform: scale(1.05);
-  background-color: rgba(30, 184, 69, 0.866);
+  background-color: rgba(135, 167, 254, 0.764);
+  border: 1px solid black;
 }
 
 li {
@@ -68,8 +70,19 @@ a:hover {
   background-color: rgb(255, 255, 255);
 }
 
-.dateTimePickerLabel {
-  color: rgb(244, 244, 244);
+.css-z3c6am-MuiFormControl-root-MuiTextField-root {
+  background-color: rgba(251, 252, 255, 0.958);
+  border-radius: 5px; /* Adjust this value to change the roundness */
+}
+
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root {
+  font-size: 1.4em !important;
+  top: -15px !important;
+  color: white !important;
+}
+
+.MuiSvgIcon-root path {
+  fill: rgb(184, 184, 255);
 }
 
 .button-icon {
@@ -87,6 +100,7 @@ a:hover {
 #walletNameInput {
   width: 325px;
   height: 25px;
+  outline: 0.5px solid black;
 }
 
 .deployArea {
@@ -96,11 +110,19 @@ a:hover {
   margin-bottom: 50px;
   padding: 40px;
   background-color: rgba(131, 141, 255, 0.735);
+  outline: 1.75px solid black;
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .tableInteractionArea {
   padding: 40px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.45);
+  outline: 1.5px solid black;
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  text-decoration: underline;
+  font-size: 18px;
 }
 
 .buttonArea {

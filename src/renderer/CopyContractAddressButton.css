@@ -17,12 +17,13 @@ svg {
   stroke: #fff;
   stroke-dasharray: 150 480;
   stroke-dashoffset: 150;
+  stroke-width: 2.5px;
   transition: 1s ease-in-out;
 }
 
 .btn:hover {
   transition: 1s ease-in-out;
-  background: #4f95da;
+  background: rgba(123, 156, 248, 0.828);
 }
 
 .btn:hover svg {
