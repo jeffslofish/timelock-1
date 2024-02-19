@@ -5,7 +5,11 @@
 require('dotenv').config();
 require('@nomiclabs/hardhat-ethers');
 
-const { API_URL, PRIVATE_KEY } = process.env;
+const { MODE, TEST_API_URL, TEST_PRIVATE_KEY, PROD_API_URL, PROD_PRIVATE_KEY } =
+  process.env;
+
+const API_URL = MODE === 'test' ? TEST_API_URL : PROD_API_URL;
+const PRIVATE_KEY = MODE === 'test' ? TEST_PRIVATE_KEY : PROD_PRIVATE_KEY;
 
 module.exports = {
   solidity: '0.8.20',

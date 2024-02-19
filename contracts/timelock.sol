@@ -21,7 +21,6 @@ contract TimeLock {
     }
 
     function withdraw() external {
-        require(msg.sender == beneficiary, "You are not the beneficiary");
         require(block.timestamp >= unlockTime, "The lock period has not ended yet");
         uint256 amount = address(this).balance; // Get the balance of MATIC tokens held by the contract
         require(amount > 0, "No MATIC tokens to withdraw");

@@ -82,8 +82,14 @@ ipcMain.on('deploy', async (event, arg) => {
 });
 
 ipcMain.on('withdraw', async (event, arg) => {
-  const API_URL = process.env.API_URL;
-  const PRIVATE_KEY = process.env.PRIVATE_KEY;
+  const API_URL =
+    process.env.MODE === 'test'
+      ? process.env.TEST_API_URL
+      : process.env.PROD_API_URL;
+  const PRIVATE_KEY =
+    process.env.MODE === 'test'
+      ? process.env.TEST_PRIVATE_KEY
+      : process.env.PROD_PRIVATE_KEY;
   const [addresses] = arg;
 
   console.log('contract addresses: ', addresses);
@@ -121,7 +127,7 @@ ipcMain.on('checkBalance', async (event, arg) => {
   const contracts = arg;
 
   const api =
-    process.env.API_MODE === 'test'
+    process.env.MODE === 'test'
       ? 'https://api-testnet.polygonscan.com/api'
       : 'https://api.polygonscan.com/api';
 
