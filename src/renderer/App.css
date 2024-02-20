@@ -86,8 +86,8 @@ a:hover {
 }
 
 .button-icon {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
 }
 
 .walletAddressArea {
@@ -100,7 +100,7 @@ a:hover {
 #walletNameInput {
   width: 325px;
   height: 25px;
-  outline: 0.5px solid black;
+  outline: 0.15px solid rgba(0, 0, 0, 0.541);
 }
 
 .deployArea {
@@ -121,8 +121,10 @@ a:hover {
   outline: 1.5px solid black;
   border-radius: 10px;
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  text-decoration: underline;
+  /* text-decoration: underline; */
   font-size: 18px;
+  letter-spacing: 0.75px;
+  /* text-transform: uppercase; */
 }
 
 .buttonArea {

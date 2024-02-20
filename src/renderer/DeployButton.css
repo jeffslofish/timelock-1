@@ -37,7 +37,7 @@
 }
 
 #deployButton:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton span {
@@ -54,9 +54,9 @@
     right top,
     left top,
     from(rgba(8, 20, 43, 0)),
-    to(#1b95ff)
+    to(#00f8cf)
   );
-  background: linear-gradient(to left, rgba(8, 20, 43, 0), #1b95ff);
+  background: linear-gradient(to left, rgba(8, 20, 43, 0), #00f8cf);
   -webkit-animation: 2s animateTop linear infinite;
   animation: 2s animateTop linear infinite;
 }
@@ -93,9 +93,9 @@
     left bottom,
     left top,
     from(rgba(8, 20, 43, 0)),
-    to(#1b95ff)
+    to(#00f8cf)
   );
-  background: linear-gradient(to top, rgba(8, 20, 43, 0), #1b95ff);
+  background: linear-gradient(to top, rgba(8, 20, 43, 0), #00f8cf);
   -webkit-animation: 2s animateRight linear -1s infinite;
   animation: 2s animateRight linear -1s infinite;
 }
@@ -132,9 +132,9 @@
     left top,
     right top,
     from(rgba(8, 20, 43, 0)),
-    to(#1b95ff)
+    to(#00f8cf)
   );
-  background: linear-gradient(to right, rgba(8, 20, 43, 0), #1b95ff);
+  background: linear-gradient(to right, rgba(8, 20, 43, 0), #00f8cf);
   -webkit-animation: 2s animateBottom linear infinite;
   animation: 2s animateBottom linear infinite;
 }
@@ -171,9 +171,9 @@
     left top,
     left bottom,
     from(rgba(8, 20, 43, 0)),
-    to(#1b95ff)
+    to(#00f8cf)
   );
-  background: linear-gradient(to bottom, rgba(8, 20, 43, 0), #1b95ff);
+  background: linear-gradient(to bottom, rgba(8, 20, 43, 0), #00f8cf);
   -webkit-animation: 2s animateLeft linear -1s infinite;
   animation: 2s animateLeft linear -1s infinite;
 }
@@ -232,7 +232,7 @@
 }
 
 #deployButton1:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton1 span {
@@ -383,7 +383,7 @@
 }
 
 #deployButton2:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton2 span {
@@ -534,7 +534,7 @@
 }
 
 #deployButton3:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton3 span {
@@ -685,7 +685,7 @@
 }
 
 #deployButton4:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton4 span {
@@ -836,7 +836,7 @@
 }
 
 #deployButton5:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton5 span {
@@ -987,7 +987,7 @@
 }
 
 #deployButton6:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton6 span {
@@ -1138,7 +1138,7 @@
 }
 
 #deployButton7:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton7 span {
@@ -1289,7 +1289,7 @@
 }
 
 #deployButton8:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton8 span {
@@ -1440,7 +1440,7 @@
 }
 
 #deployButton9:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton9 span {
@@ -1591,7 +1591,7 @@
 }
 
 #deployButton10:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton10 span {
@@ -1742,7 +1742,7 @@
 }
 
 #deployButton11:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton11 span {
@@ -1893,7 +1893,7 @@
 }
 
 #deployButton12:hover::before {
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 #deployButton12 span {

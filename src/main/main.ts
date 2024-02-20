@@ -8,6 +8,7 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+const util = require('util');
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -16,9 +17,19 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { cache } from 'webpack';
 import { release } from 'os';
+import { BigNumber } from 'bignumber.js';
 const { ethers } = require('hardhat');
 require('@nomiclabs/hardhat-etherscan');
 const Store = require('electron-store');
+
+const API_URL =
+  process.env.MODE === 'test'
+    ? process.env.TEST_API_URL
+    : process.env.PROD_API_URL;
+const PRIVATE_KEY =
+  process.env.MODE === 'test'
+    ? process.env.TEST_PRIVATE_KEY
+    : process.env.PROD_PRIVATE_KEY;
 
 const store = new Store();
 
@@ -51,8 +62,42 @@ ipcMain.on('deploy', async (event, arg) => {
 
   // Start deployment, returning a promise that resolves to a contract object
   try {
+    const alchemyProvider = new ethers.providers.JsonRpcProvider(API_URL);
+    const feeData = await alchemyProvider.getFeeData();
+    console.log('feeData: ');
+    // {
+    //   lastBaseFeePerGas: BigNumber { value: "43790869015" },
+    //   maxFeePerGas: BigNumber { value: "89081738030" },
+    //   maxPriorityFeePerGas: BigNumber { value: "1500000000" },
+    //   gasPrice: BigNumber { value: "73790869015" }
+    gasPrice: new BigNumber('56024555897');
+    // }
+    console.log(
+      util.inspect(feeData, {
+        showHidden: false,
+        depth: null,
+        colors: true,
+      }),
+    );
+
+    const deployOverrides = { gasPrice: { BigNumber: '73790869015' } };
+
     const timelock = await TimeLock.deploy(walletAddress, releaseTime);
-    console.log('Contract deployed to address:', timelock.address);
+    console.log('deploying');
+    console.log('contract deployment info ');
+    console.log(
+      util.inspect(timelock.deployTransaction, {
+        showHidden: false,
+        depth: null,
+        colors: true,
+      }),
+    );
+
+    await timelock.deployTransaction.wait();
+    console.log(
+      'Contract deployed to address and ready for interaction:',
+      timelock.address,
+    );
 
     if (store.get('data')) {
       store.set('data', [
@@ -82,14 +127,6 @@ ipcMain.on('deploy', async (event, arg) => {
 });
 
 ipcMain.on('withdraw', async (event, arg) => {
-  const API_URL =
-    process.env.MODE === 'test'
-      ? process.env.TEST_API_URL
-      : process.env.PROD_API_URL;
-  const PRIVATE_KEY =
-    process.env.MODE === 'test'
-      ? process.env.TEST_PRIVATE_KEY
-      : process.env.PROD_PRIVATE_KEY;
   const [addresses] = arg;
 
   console.log('API_URL ' + API_URL);
@@ -113,15 +150,25 @@ ipcMain.on('withdraw', async (event, arg) => {
 
     try {
       console.log('withdrawing on address: ' + addresses[i]);
-      await timelockContract.withdraw();
-      console.log('withdraw successful');
+      const tx = await timelockContract.withdraw();
+      console.log('withdrawing....');
+      event.reply('withdraw', [true, 'withdrawing....']);
+      console.log(
+        util.inspect(tx, {
+          showHidden: false,
+          depth: null,
+          colors: true,
+        }),
+      );
+
+      await tx.wait();
+      console.log('withdraw complete');
+      event.reply('withdraw', [true, 'Withdraw complete']);
     } catch (msg) {
       console.log('withdraw NOT successful');
       event.reply('withdraw', [false, msg]);
     }
   }
-
-  event.reply('withdraw', [true, 'Withdraw complete']);
 });
 
 ipcMain.on('checkBalance', async (event, arg) => {
@@ -247,8 +294,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1146,
-    height: 844,
+    width: 1450,
+    height: 920,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
