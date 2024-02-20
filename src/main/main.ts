@@ -15,9 +15,6 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { cache } from 'webpack';
-import { release } from 'os';
-import { BigNumber } from 'bignumber.js';
 const { ethers } = require('hardhat');
 require('@nomiclabs/hardhat-etherscan');
 const Store = require('electron-store');
@@ -32,6 +29,11 @@ const PRIVATE_KEY =
     : process.env.PROD_PRIVATE_KEY;
 
 const store = new Store();
+
+const overrides = {
+  maxPriorityFeePerGas: ethers.utils.parseUnits('100', 'gwei'),
+  maxFeePerGas: ethers.utils.parseUnits('110', 'gwei'),
+};
 
 class AppUpdater {
   constructor() {
@@ -70,7 +72,7 @@ ipcMain.on('deploy', async (event, arg) => {
     //   maxFeePerGas: BigNumber { value: "89081738030" },
     //   maxPriorityFeePerGas: BigNumber { value: "1500000000" },
     //   gasPrice: BigNumber { value: "73790869015" }
-    gasPrice: new BigNumber('56024555897');
+    //gasPrice: new BigNumber('56024555897');
     // }
     console.log(
       util.inspect(feeData, {
@@ -80,9 +82,11 @@ ipcMain.on('deploy', async (event, arg) => {
       }),
     );
 
-    const deployOverrides = { gasPrice: { BigNumber: '73790869015' } };
-
-    const timelock = await TimeLock.deploy(walletAddress, releaseTime);
+    const timelock = await TimeLock.deploy(
+      walletAddress,
+      releaseTime,
+      overrides,
+    );
     console.log('deploying');
     console.log('contract deployment info ');
     console.log(
@@ -150,7 +154,7 @@ ipcMain.on('withdraw', async (event, arg) => {
 
     try {
       console.log('withdrawing on address: ' + addresses[i]);
-      const tx = await timelockContract.withdraw();
+      const tx = await timelockContract.withdraw(overrides);
       console.log('withdrawing....');
       event.reply('withdraw', [true, 'withdrawing....']);
       console.log(
@@ -165,7 +169,7 @@ ipcMain.on('withdraw', async (event, arg) => {
       console.log('withdraw complete');
       event.reply('withdraw', [true, 'Withdraw complete']);
     } catch (msg) {
-      console.log('withdraw NOT successful');
+      console.log('withdraw NOT successful ' + msg);
       event.reply('withdraw', [false, msg]);
     }
   }
