@@ -30,11 +30,6 @@ const PRIVATE_KEY =
 
 const store = new Store();
 
-const overrides = {
-  maxPriorityFeePerGas: ethers.utils.parseUnits('100', 'gwei'),
-  maxFeePerGas: ethers.utils.parseUnits('110', 'gwei'),
-};
-
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -54,15 +49,9 @@ ipcMain.on('contractAddress', async (event, arg) => {
   }
 });
 
-ipcMain.on('deploy', async (event, arg) => {
-  const [walletName, walletAddress, releaseTime] = arg;
-
-  const msgTemplate = (pingPong: string) => `${pingPong}`;
-  console.log(msgTemplate(arg));
-
+ipcMain.on('fetchTip', async (event, arg) => {
   const TimeLock = await ethers.getContractFactory('TimeLock');
 
-  // Start deployment, returning a promise that resolves to a contract object
   try {
     const alchemyProvider = new ethers.providers.JsonRpcProvider(API_URL);
     const feeData = await alchemyProvider.getFeeData();
@@ -81,6 +70,39 @@ ipcMain.on('deploy', async (event, arg) => {
         colors: true,
       }),
     );
+
+    const tipGwei = ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei');
+    console.log('tipgwei: ' + tipGwei);
+
+    event.reply('fetchTip', [true, tipGwei]);
+  } catch (err) {
+    console.log('error fetching tip ' + err);
+  }
+});
+
+ipcMain.on('deploy', async (event, arg) => {
+  const [walletName, walletAddress, releaseTime, tip] = arg;
+
+  const msgTemplate = (pingPong: string) => `${pingPong}`;
+  console.log(msgTemplate(arg));
+
+  const TimeLock = await ethers.getContractFactory('TimeLock');
+
+  // Start deployment, returning a promise that resolves to a contract object
+  try {
+    const alchemyProvider = new ethers.providers.JsonRpcProvider(API_URL);
+    const feeData = await alchemyProvider.getFeeData();
+    const maxFeePerGas = ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei');
+
+    const overrides = {
+      maxPriorityFeePerGas: ethers.utils.parseUnits(tip.toString(), 'gwei'),
+      maxFeePerGas: ethers.utils.parseUnits((tip + 10).toString(), 'gwei'),
+    };
+
+    //   lastBaseFeePerGas: BigNumber { value: "32276631733" },
+    //        maxFeePerGas: BigNumber { value: "66053263466" },
+    // maxPriorityFeePerGas: BigNumber { value: "1500000000" },
+    //            gasPrice: BigNumber { value: "62276631733" }
 
     const timelock = await TimeLock.deploy(
       walletAddress,
@@ -131,7 +153,7 @@ ipcMain.on('deploy', async (event, arg) => {
 });
 
 ipcMain.on('withdraw', async (event, arg) => {
-  const [addresses] = arg;
+  const [addresses, tip] = arg;
 
   console.log('API_URL ' + API_URL);
   console.log('contract addresses: ', addresses);
@@ -151,6 +173,11 @@ ipcMain.on('withdraw', async (event, arg) => {
       contract.abi,
       signer,
     );
+
+    const overrides = {
+      maxPriorityFeePerGas: ethers.utils.parseUnits(tip.toString(), 'gwei'),
+      maxFeePerGas: ethers.utils.parseUnits((tip + 10).toString(), 'gwei'),
+    };
 
     try {
       console.log('withdrawing on address: ' + addresses[i]);

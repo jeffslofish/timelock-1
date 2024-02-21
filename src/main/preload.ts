@@ -7,6 +7,7 @@ export type WithdrawChannel = 'withdraw';
 export type ContractAddressChannel = 'contractAddress';
 export type CheckBalanceChannel = 'checkBalance';
 export type UpdateDataChannel = 'updateData';
+export type FetchTipChannel = 'fetchTip';
 
 const electronHandler = {
   ipcRenderer: {
@@ -26,6 +27,9 @@ const electronHandler = {
       ipcRenderer.send(channel, ...args);
     },
     sendUpdateDataMessage(channel: UpdateDataChannel, ...args: unknown[]) {
+      ipcRenderer.send(channel, ...args);
+    },
+    sendFetchTipMessage(channel: FetchTipChannel, ...args: unknown[]) {
       ipcRenderer.send(channel, ...args);
     },
 
@@ -107,6 +111,9 @@ const electronHandler = {
       channel: UpdateDataChannel,
       func: (...args: unknown[]) => void,
     ) {
+      ipcRenderer.once(channel, (_event, ...args) => func(...args));
+    },
+    onceSendTip(channel: FetchTipChannel, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },

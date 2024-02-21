@@ -38,7 +38,7 @@ function Hello() {
     useState<dayjs.Dayjs | null>(dayjs(Date.now()));
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [currentPrice, setCurrentPrice] = useState(0);
-
+  const [tip, setTip] = useState(0);
   const [visible, setVisible] = useState(false);
   const toastDialog = useRef(null);
 
@@ -159,6 +159,19 @@ function Hello() {
     );
   }, []);
 
+  const fetchSuggestedTip = () => {
+    window.electron.ipcRenderer.onceSendTip('fetchTip', (arg: any) => {
+      const [success, suggestedTip] = arg;
+
+      if (success) {
+        setTip(suggestedTip);
+      } else {
+        console.log('Error fetching tip');
+      }
+    });
+
+    window.electron.ipcRenderer.sendFetchTipMessage('fetchTip', []);
+  };
   const deploy = () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceDeploy('deploy', (arg: any) => {
@@ -184,10 +197,12 @@ function Hello() {
     });
 
     if (contractReleaseTime) {
+      toast.info('Deploy Starting...');
       window.electron.ipcRenderer.sendDeployMessage('deploy', [
         walletName,
         walletAddress,
         contractReleaseTime.unix(),
+        tip,
       ]);
     } else {
       toast.error('Please choose a release time');
@@ -217,7 +232,11 @@ function Hello() {
       addresses.push(row.original.address);
     }
 
-    window.electron.ipcRenderer.sendWithdrawMessage('withdraw', [addresses]);
+    toast.info('Withdraw Starting...');
+    window.electron.ipcRenderer.sendWithdrawMessage('withdraw', [
+      addresses,
+      tip,
+    ]);
   };
 
   const checkBalance = async () => {
@@ -268,6 +287,10 @@ function Hello() {
     setWalletName(target.value);
   };
 
+  const changeTip = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    setTip(target.value);
+  };
+
   const clearRow = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
 
@@ -303,6 +326,31 @@ function Hello() {
   };
   return (
     <div>
+      <div className="tipArea">
+        <label htmlFor="tip">Tip:</label>
+        <input type="text" onChange={changeTip} value={tip} />
+        <button
+          type="button"
+          id="tipButton"
+          className="button"
+          title="Get Tip"
+          onClick={fetchSuggestedTip}
+        >
+          Get Suggested Tip
+        </button>
+        <button
+          type="button"
+          id="tipButton"
+          className="button"
+          title="Get Tip"
+          onClick={() => {
+            setTip(tip * 1.5);
+          }}
+        >
+          Boost Tip
+        </button>
+      </div>
+
       <div className="deployArea">
         <div className="walletAddressArea">
           <label htmlFor="walletAddressInput">Wallet Name:</label>
@@ -330,6 +378,7 @@ function Hello() {
             showDaysOutsideCurrentMonth
           />
         </div>
+
         <button
           type="button"
           id="deployButton"
