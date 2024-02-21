@@ -18,6 +18,7 @@ import { resolveHtmlPath } from './util';
 const { ethers } = require('hardhat');
 require('@nomiclabs/hardhat-etherscan');
 const Store = require('electron-store');
+const { dialog } = require('electron');
 
 const API_URL =
   process.env.MODE === 'test'
@@ -302,7 +303,7 @@ const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
-  require('electron-debug')();
+  require('electron-debug')({ showDevTools: false });
 }
 
 const installExtensions = async () => {
@@ -359,6 +360,17 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  mainWindow.on('close', function (e) {
+    let response = dialog.showMessageBoxSync(this, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Confirm',
+      message: 'Are you sure you want to quit?',
+    });
+
+    if (response == 1) e.preventDefault();
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);
