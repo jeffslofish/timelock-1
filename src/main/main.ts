@@ -73,9 +73,12 @@ ipcMain.on('fetchTip', async (event, arg) => {
     );
 
     const tipGwei = ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei');
-    console.log('tipgwei: ' + tipGwei);
 
-    event.reply('fetchTip', [true, tipGwei]);
+    const floatTip = parseFloat(tipGwei);
+    const formattedTip = floatTip.toFixed(2);
+    console.log('tipgwei: ' + formattedTip);
+
+    event.reply('fetchTip', [true, formattedTip]);
   } catch (err) {
     console.log('error fetching tip ' + err);
   }
