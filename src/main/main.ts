@@ -129,24 +129,32 @@ ipcMain.on('deploy', async (event, arg) => {
       store.set('data', [
         ...store.get('data'),
         {
-          walletName: walletName,
+          walletName,
+          walletAddress,
           address: timelock.address,
-          releaseTime: releaseTime,
+          releaseTime,
           balance: 0,
         },
       ]);
     } else {
       store.set('data', [
         {
-          walletName: walletName,
+          walletName,
+          walletAddress,
           address: timelock.address,
-          releaseTime: releaseTime,
+          releaseTime,
           balance: 0,
         },
       ]);
     }
 
-    event.reply('deploy', [true, walletName, timelock.address, releaseTime]);
+    event.reply('deploy', [
+      true,
+      walletName,
+      walletAddress,
+      timelock.address,
+      releaseTime,
+    ]);
   } catch (error) {
     event.reply('deploy', [false, error]);
   }

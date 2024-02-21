@@ -44,6 +44,7 @@ function Hello() {
 
   type Contract = {
     walletName: string;
+    walletAddress: string;
     address: string;
     releaseTime: number;
     balance: number;
@@ -78,7 +79,16 @@ function Hello() {
     },
     columnHelper.accessor((row) => row.walletName, {
       id: 'walletName',
-      cell: (info) => info.getValue(),
+      cell: (info) => (
+        <span
+          className="pointer"
+          onClick={() =>
+            navigator.clipboard.writeText(info.row.original.walletAddress)
+          }
+        >
+          {info.getValue()}
+        </span>
+      ),
       header: () => <span>Wallet Name</span>,
       footer: (info) => info.column.id,
     }),
@@ -175,7 +185,7 @@ function Hello() {
   const deploy = () => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.onceDeploy('deploy', (arg: any) => {
-      const [success, walletName, address, releaseTime] = arg;
+      const [success, walletName, walletAddress, address, releaseTime] = arg;
 
       if (success) {
         // eslint-disable-next-line no-console
@@ -185,9 +195,10 @@ function Hello() {
         setData([
           ...data,
           {
-            walletName: walletName,
-            address: address,
-            releaseTime: releaseTime,
+            walletName,
+            walletAddress,
+            address,
+            releaseTime,
             balance: 0,
           },
         ]);
