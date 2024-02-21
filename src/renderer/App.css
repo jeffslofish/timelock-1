@@ -31,7 +31,6 @@ body {
     0px 8px 28px -6px rgba(24, 39, 75, 0.12),
     0px 18px 88px -4px rgba(24, 39, 75, 0.14);
   transition: all ease-in 0.1s;
-  cursor: pointer;
   /* opacity: 0.9; */
   margin: 10px;
   border: 1px solid rgba(135, 167, 254);
@@ -41,6 +40,10 @@ body {
   transform: scale(1.05);
   background-color: rgba(135, 167, 254, 0.764);
   border: 1px solid black;
+}
+
+.button {
+  cursor: pointer;
 }
 
 li {
